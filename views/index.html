@@ -37,9 +37,12 @@
 
       exerciseForm.addEventListener("submit", () => {
         const userId = document.getElementById("uid").value;
-        exerciseForm.action = `/api/users/${userId}/exercises`;
 
-        exerciseForm.submit();
+        if(userId) {
+          exerciseForm.action = `/api/users/${userId}/exercises`;
+  
+          exerciseForm.submit();
+        }
       });
     </script>
   </body>
