@@ -66,8 +66,6 @@ app.get("/api/users/:_id/logs", async (req, res) => {
     });
   }
 
-  console.log('random push')
-
   let filter = { userId };
   let dateFilter = {};
 
