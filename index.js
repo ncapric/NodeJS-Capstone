@@ -86,7 +86,10 @@ app.get("/api/users/:_id/logs", async (req, res) => {
   }
 
   try {
-    let excersises = await Exercise.find(filter).limit(limit);
+    let excersisesCount = await Exercise.find(filter);
+    let excersises = await Exercise.find(filter)
+      .sort({ date: 1 })
+      .limit(limit);
 
     if (!excersises.length) {
       return res.status(400).json({
@@ -94,20 +97,21 @@ app.get("/api/users/:_id/logs", async (req, res) => {
       });
     }
 
-    excersises.map(excersise => {
+    const searchedExcersises = excersises.map(excersise => {
       return {
+        id: excersise.id,
         description: excersise.description,
         duration: excersise.duration,
         date: excersise.date.toDateString(),
       }
     });
 
-    if (excersises.length) {
+    if (searchedExcersises.length) {
       return res.json({
         username: foundUser.username,
-        counter: excersises.length,
+        count: excersisesCount.length,
         _id: userId,
-        log: excersises,
+        log: searchedExcersises,
       });
     }
   } catch (err) {
@@ -175,13 +179,23 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
     });
   }
 
-  if (!date || !isDateValid(date)) {
+  if (duration < 1) {
+    return res.status(400).json({
+      message: 'Negative numbers are not a valid duration'
+    })
+  }
+
+  if (!isDateValid(date)) {
     return res.status(400).json({
       message: 'Please enter a valid date'
     });
   }
 
-  date = new Date(date);
+  if (date) {
+    date = new Date(date);
+  } else {
+    date = new Date()
+  }
 
   try {
     await Exercise.create({
@@ -202,12 +216,14 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
     description,
     duration,
     date: date.toDateString(),
-    _id: userId,
+    id: userId,
   });
 });
 
 
 function isDateValid(dateString) {
+  if (dateString === '') return true;
+
   const date = new Date(dateString);
 
   return date instanceof Date && !isNaN(date);
